@@ -13,9 +13,10 @@ import traceback
 import collections
 
 from traceback import format_exception_only
+from typing import Any
 
-
-def md5(*args):
+# TODO: args
+def md5(*args) -> str:
     m = hashlib.md5()
     for arg in args:
         if not isinstance(arg, bytes):
@@ -26,29 +27,30 @@ def md5(*args):
     return m.hexdigest()
 
 
-def uuid4():
+def uuid4() -> str:
     return str(uuid.uuid4())
 
 
-def now():
+def now() -> int:
     return int(round(1000 * time.time()))
 
 
-def platform_label():
+def platform_label() -> str:
     major_version, *_ = platform.python_version_tuple()
     implementation = platform.python_implementation().lower()
     return f'{implementation}{major_version}'
 
 
-def thread_tag():
+def thread_tag() -> str:
     return '{0}-{1}'.format(os.getpid(), threading.current_thread().name)
 
 
-def host_tag():
+def host_tag() -> str:
     return socket.gethostname()
 
 
-def represent(item):
+# TODO: item
+def represent(item) -> str:
     """
     >>> represent(None)
     'None'
@@ -93,7 +95,8 @@ def represent(item):
         return repr(item)
 
 
-def func_parameters(func, *args, **kwargs):
+# TODO: func, args, kwargs
+def func_parameters(func, *args, **kwargs) -> collections.OrderedDict[Any, str]:
     """
     >>> def helper(func):
     ...     def wrapper(*args, **kwargs):
@@ -268,11 +271,13 @@ def func_parameters(func, *args, **kwargs):
     return collections.OrderedDict(sorted_items)
 
 
-def format_traceback(exc_traceback):
+# TODO: exc_traceback
+def format_traceback(exc_traceback) -> str | None:
     return ''.join(traceback.format_tb(exc_traceback)) if exc_traceback else None
 
 
-def format_exception(etype, value):
+# TODO: etype, value
+def format_exception(etype, value) -> str | None:
     """
     >>> import sys
 

@@ -2,6 +2,7 @@ import os
 import string
 import sys
 import time
+import types
 import uuid
 import json
 import socket
@@ -14,6 +15,7 @@ import collections
 
 from traceback import format_exception_only
 from typing import Any
+
 
 # TODO: args
 def md5(*args) -> str:
@@ -271,8 +273,7 @@ def func_parameters(func, *args, **kwargs) -> collections.OrderedDict[Any, str]:
     return collections.OrderedDict(sorted_items)
 
 
-# TODO: exc_traceback
-def format_traceback(exc_traceback) -> str | None:
+def format_traceback(exc_traceback: types.TracebackType | None) -> str | None:
     return ''.join(traceback.format_tb(exc_traceback)) if exc_traceback else None
 
 

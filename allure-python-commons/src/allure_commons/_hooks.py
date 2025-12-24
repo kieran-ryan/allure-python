@@ -1,4 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from pluggy import HookspecMarker, HookimplMarker
+
+if TYPE_CHECKING:
+    from collections.abc import Buffer
 
 hookspec = HookspecMarker("allure")
 hookimpl = HookimplMarker("allure")
@@ -7,27 +14,27 @@ hookimpl = HookimplMarker("allure")
 class AllureUserHooks:
 
     @hookspec
-    def decorate_as_title(self, test_title):
+    def decorate_as_title(self, test_title: str):
         """ title """
 
     @hookspec
-    def add_title(self, test_title):
+    def add_title(self, test_title: str):
         """ title """
 
     @hookspec
-    def decorate_as_description(self, test_description):
+    def decorate_as_description(self, test_description: str):
         """ description """
 
     @hookspec
-    def add_description(self, test_description):
+    def add_description(self, test_description: str):
         """ description """
 
     @hookspec
-    def decorate_as_description_html(self, test_description_html):
+    def decorate_as_description_html(self, test_description_html: str):
         """ description html"""
 
     @hookspec
-    def add_description_html(self, test_description_html):
+    def add_description_html(self, test_description_html: str):
         """ description html"""
 
     @hookspec
@@ -55,7 +62,7 @@ class AllureUserHooks:
         """ step """
 
     @hookspec
-    def stop_step(self, uuid, exc_type, exc_val, exc_tb):
+    def stop_step(self, uuid: str, exc_type, exc_val, exc_tb):
         """ step """
 
     @hookspec
@@ -94,9 +101,9 @@ class AllureDeveloperHooks:
         """ reporting """
 
     @hookspec
-    def report_attached_file(self, source, file_name):
+    def report_attached_file(self, source: str, file_name: str):
         """ reporting """
 
     @hookspec
-    def report_attached_data(self, body, file_name):
+    def report_attached_data(self, body: Buffer | str, file_name: str):
         """ reporting """

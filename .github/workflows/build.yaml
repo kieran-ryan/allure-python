@@ -90,6 +90,10 @@ jobs:
       - name: Linting the codebase
         run: poe linter
 
+      - name: Type checking allure-python-commons
+        run: ty check
+        working-directory: ./allure-python-commons
+
   test-pytest:
     name: Test allure-pytest
     runs-on: ubuntu-latest

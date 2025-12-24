@@ -1,3 +1,6 @@
 [tool.poe.tasks]
 linter = "flake8 --extend-ignore=A001,A002,A003 ./src"
 tests = "python -m doctest ./src/allure_commons/*.py"
+
+[tool.ty.src]
+exclude = ["setup.py"]

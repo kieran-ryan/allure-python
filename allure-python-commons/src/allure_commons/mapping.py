@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from itertools import chain, islice
 import attr
 import re
@@ -12,18 +14,19 @@ semi_sep = re.compile(r"allure[\.\w]+[^:=]*:")
 eq_sep = re.compile(r"allure[\.\w]+[^:=]*=")
 
 
-def allure_tag_sep(tag):
+def allure_tag_sep(tag: str) -> str | None:
     if semi_sep.search(tag):
         return ":"
     if eq_sep.search(tag):
         return "="
+    return None
 
 
-def __is(kind, t):
+def __is(kind: str, t: type[LabelType | LinkType]) -> bool:
     return kind in [v for k, v in t.__dict__.items() if not k.startswith('__')]
 
 
-def parse_tag(tag, issue_pattern=None, link_pattern=None):
+def parse_tag(tag: str, issue_pattern: str | None = None, link_pattern: str | None = None) -> Label | Link:
     """
     >>> parse_tag("blocker")
     Label(name='severity', value='blocker')
@@ -77,7 +80,7 @@ def parse_tag(tag, issue_pattern=None, link_pattern=None):
     return Label(name=LabelType.TAG, value=tag)
 
 
-def labels_set(labels):
+def labels_set(labels: list[Label]) -> list[Label]:
     """
     >>> labels_set([Label(name=LabelType.SEVERITY, value=Severity.NORMAL),
     ...             Label(name=LabelType.SEVERITY, value=Severity.BLOCKER)
@@ -100,18 +103,20 @@ def labels_set(labels):
     [Label(name='epic', value='Epic1'), Label(name='epic', value='Epic2')]
     """
     class Wl:
-        def __init__(self, label):
+        def __init__(self, label: Label) -> None:
             self.label = label
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return "{name}{value}".format(**attr.asdict(self.label))
 
-        def __eq__(self, other):
+        def __eq__(self, other: object) -> bool:
+            if not isinstance(other, Wl):
+                return False
             if self.label.name in ALLURE_UNIQUE_LABELS:
                 return self.label.name == other.label.name
             return repr(self) == repr(other)
 
-        def __hash__(self):
+        def __hash__(self) -> int:
             if self.label.name in ALLURE_UNIQUE_LABELS:
                 return hash(self.label.name)
             return hash(repr(self))

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import string
 import sys
@@ -10,12 +12,13 @@ import hashlib
 import platform
 import threading
 import traceback
-import collections
-
+from collections import OrderedDict
 from traceback import format_exception_only
+from types import TracebackType
+from typing import Any, Mapping, Sequence, Callable
 
 
-def md5(*args):
+def md5(*args: Any) -> str:
     m = hashlib.md5()
     for arg in args:
         if not isinstance(arg, bytes):
@@ -26,29 +29,29 @@ def md5(*args):
     return m.hexdigest()
 
 
-def uuid4():
+def uuid4() -> str:
     return str(uuid.uuid4())
 
 
-def now():
+def now() -> int:
     return int(round(1000 * time.time()))
 
 
-def platform_label():
+def platform_label() -> str:
     major_version, *_ = platform.python_version_tuple()
     implementation = platform.python_implementation().lower()
     return f'{implementation}{major_version}'
 
 
-def thread_tag():
+def thread_tag() -> str:
     return '{0}-{1}'.format(os.getpid(), threading.current_thread().name)
 
 
-def host_tag():
+def host_tag() -> str:
     return socket.gethostname()
 
 
-def represent(item):
+def represent(item: Any) -> str:
     """
     >>> represent(None)
     'None'
@@ -93,7 +96,7 @@ def represent(item):
         return repr(item)
 
 
-def func_parameters(func, *args, **kwargs):
+def func_parameters(func: Callable, *args: Any, **kwargs: Any) -> OrderedDict:
     """
     >>> def helper(func):
     ...     def wrapper(*args, **kwargs):
@@ -265,14 +268,14 @@ def func_parameters(func, *args, **kwargs):
         key=lambda x: arg_order.index(x[0])
     )
 
-    return collections.OrderedDict(sorted_items)
+    return OrderedDict(sorted_items)
 
 
-def format_traceback(exc_traceback):
+def format_traceback(exc_traceback: TracebackType | None) -> str | None:
     return ''.join(traceback.format_tb(exc_traceback)) if exc_traceback else None
 
 
-def format_exception(etype, value):
+def format_exception(etype: type[BaseException] | None, value: BaseException | None) -> str | None:
     """
     >>> import sys
 
@@ -323,7 +326,7 @@ def format_exception(etype, value):
     return '\n'.join(format_exception_only(etype, value)) if etype or value else None
 
 
-def get_testplan():
+def get_testplan() -> list[dict[str, Any]]:
     planned_tests = []
     file_path = os.environ.get("ALLURE_TESTPLAN_PATH")
 
@@ -372,13 +375,18 @@ class SafeFormatter(string.Formatter):
     class SafeKeyOrIndexError(Exception):
         pass
 
-    def get_field(self, field_name, args, kwargs):
+    def get_field(
+        self,
+        field_name: str,
+        args: Sequence[Any],
+        kwargs: Mapping[str, Any]
+    ) -> tuple[Any, Any] | tuple[str, str]:
         try:
             return super().get_field(field_name, args, kwargs)
         except self.SafeKeyOrIndexError:
             return "{" + field_name + "}", field_name
 
-    def get_value(self, key, args, kwargs):
+    def get_value(self, key: int | str, args: Sequence[Any], kwargs: Mapping[str, Any]) -> Any:
         try:
             return super().get_value(key, args, kwargs)
         except (KeyError, IndexError):

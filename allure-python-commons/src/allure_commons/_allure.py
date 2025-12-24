@@ -1,15 +1,22 @@
+from __future__ import annotations
+
 from functools import wraps
-from typing import Any, Callable, TypeVar, Union, overload
+from typing import Any, Callable, TypeVar, TYPE_CHECKING, overload
 
 from allure_commons._core import plugin_manager
-from allure_commons.types import LabelType, LinkType, ParameterMode
+from allure_commons.types import LabelType, LinkType
 from allure_commons.utils import uuid4
 from allure_commons.utils import func_parameters, represent
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from allure_commons.types import AttachmentType, ParameterMode
 
 _TFunc = TypeVar("_TFunc", bound=Callable[..., Any])
 
 
-def safely(result):
+def safely(result: list[Callable]) -> Callable:
     if result:
         return result[0]
     else:
@@ -18,23 +25,23 @@ def safely(result):
         return dummy
 
 
-def title(test_title):
+def title(test_title: str):
     return safely(plugin_manager.hook.decorate_as_title(test_title=test_title))
 
 
-def description(test_description):
+def description(test_description: str):
     return safely(plugin_manager.hook.decorate_as_description(test_description=test_description))
 
 
-def description_html(test_description_html):
+def description_html(test_description_html: str):
     return safely(plugin_manager.hook.decorate_as_description_html(test_description_html=test_description_html))
 
 
-def label(label_type, *labels):
+def label(label_type: LabelType, *labels):
     return safely(plugin_manager.hook.decorate_as_label(label_type=label_type, labels=labels))
 
 
-def severity(severity_level):
+def severity(severity_level: str):
     return label(LabelType.SEVERITY, severity_level)
 
 
@@ -50,15 +57,15 @@ def story(*stories):
     return label(LabelType.STORY, *stories)
 
 
-def suite(suite_name):
+def suite(suite_name: str):
     return label(LabelType.SUITE, suite_name)
 
 
-def parent_suite(parent_suite_name):
+def parent_suite(parent_suite_name: str):
     return label(LabelType.PARENT_SUITE, parent_suite_name)
 
 
-def sub_suite(sub_suite_name):
+def sub_suite(sub_suite_name: str):
     return label(LabelType.SUB_SUITE, sub_suite_name)
 
 
@@ -66,7 +73,7 @@ def tag(*tags):
     return label(LabelType.TAG, *tags)
 
 
-def id(id):  # noqa: A001,A002
+def id(id: str):  # noqa: A001,A002
     return label(LabelType.ID, id)
 
 
@@ -74,90 +81,90 @@ def manual(fn):
     return label(LabelType.MANUAL, True)(fn)
 
 
-def link(url, link_type=LinkType.LINK, name=None):
+def link(url: str, link_type: LinkType = LinkType.LINK, name: str | None = None):
     return safely(plugin_manager.hook.decorate_as_link(url=url, link_type=link_type, name=name))
 
 
-def issue(url, name=None):
+def issue(url: str, name: str | None = None):
     return link(url, link_type=LinkType.ISSUE, name=name)
 
 
-def testcase(url, name=None):
+def testcase(url: str, name: str | None = None):
     return link(url, link_type=LinkType.TEST_CASE, name=name)
 
 
 class Dynamic:
 
     @staticmethod
-    def title(test_title):
+    def title(test_title: str) -> None:
         plugin_manager.hook.add_title(test_title=test_title)
 
     @staticmethod
-    def description(test_description):
+    def description(test_description: str) -> None:
         plugin_manager.hook.add_description(test_description=test_description)
 
     @staticmethod
-    def description_html(test_description_html):
+    def description_html(test_description_html: str) -> None:
         plugin_manager.hook.add_description_html(test_description_html=test_description_html)
 
     @staticmethod
-    def label(label_type, *labels):
+    def label(label_type: LabelType, *labels: Any) -> None:
         plugin_manager.hook.add_label(label_type=label_type, labels=labels)
 
     @staticmethod
-    def severity(severity_level):
+    def severity(severity_level: str) -> None:
         Dynamic.label(LabelType.SEVERITY, severity_level)
 
     @staticmethod
-    def epic(*epics):
+    def epic(*epics: str) -> None:
         Dynamic.label(LabelType.EPIC, *epics)
 
     @staticmethod
-    def feature(*features):
+    def feature(*features: str) -> None:
         Dynamic.label(LabelType.FEATURE, *features)
 
     @staticmethod
-    def story(*stories):
+    def story(*stories: str) -> None:
         Dynamic.label(LabelType.STORY, *stories)
 
     @staticmethod
-    def tag(*tags):
+    def tag(*tags: str) -> None:
         Dynamic.label(LabelType.TAG, *tags)
 
     @staticmethod
-    def id(id):  # noqa: A003,A002
+    def id(id: str) -> None:  # noqa: A003,A002
         Dynamic.label(LabelType.ID, id)
 
     @staticmethod
-    def link(url, link_type=LinkType.LINK, name=None):
+    def link(url: str, link_type: LinkType = LinkType.LINK, name: str | None = None) -> None:
         plugin_manager.hook.add_link(url=url, link_type=link_type, name=name)
 
     @staticmethod
-    def parameter(name, value, excluded=None, mode: Union[ParameterMode, None] = None):
+    def parameter(name: str, value: str, excluded: bool | None = None, mode: ParameterMode | None = None) -> None:
         plugin_manager.hook.add_parameter(name=name, value=value, excluded=excluded, mode=mode)
 
     @staticmethod
-    def issue(url, name=None):
+    def issue(url: str, name: str | None = None) -> None:
         Dynamic.link(url, link_type=LinkType.ISSUE, name=name)
 
     @staticmethod
-    def testcase(url, name=None):
+    def testcase(url: str, name: str | None = None) -> None:
         Dynamic.link(url, link_type=LinkType.TEST_CASE, name=name)
 
     @staticmethod
-    def suite(suite_name):
+    def suite(suite_name: str) -> None:
         Dynamic.label(LabelType.SUITE, suite_name)
 
     @staticmethod
-    def parent_suite(parent_suite_name):
+    def parent_suite(parent_suite_name: str) -> None:
         Dynamic.label(LabelType.PARENT_SUITE, parent_suite_name)
 
     @staticmethod
-    def sub_suite(sub_suite_name):
+    def sub_suite(sub_suite_name: str) -> None:
         Dynamic.label(LabelType.SUB_SUITE, sub_suite_name)
 
     @staticmethod
-    def manual():
+    def manual() -> None:
         return Dynamic.label(LabelType.MANUAL, True)
 
 
@@ -180,15 +187,15 @@ def step(title):
 
 class StepContext:
 
-    def __init__(self, title, params):
+    def __init__(self, title: str, params) -> None:
         self.title = title
         self.params = params
         self.uuid = uuid4()
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         plugin_manager.hook.start_step(uuid=self.uuid, title=self.title, params=self.params)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:
         plugin_manager.hook.stop_step(uuid=self.uuid, title=self.title, exc_type=exc_type, exc_val=exc_val,
                                       exc_tb=exc_tb)
 
@@ -206,10 +213,10 @@ class StepContext:
 
 class Attach:
 
-    def __call__(self, body, name=None, attachment_type=None, extension=None):
+    def __call__(self, body: str, name: str | None = None, attachment_type: AttachmentType | None = None, extension: str | None = None) -> None:
         plugin_manager.hook.attach_data(body=body, name=name, attachment_type=attachment_type, extension=extension)
 
-    def file(self, source, name=None, attachment_type=None, extension=None):
+    def file(self, source: str, name: str | None = None, attachment_type: AttachmentType | None = None, extension : str | None = None) -> None:
         plugin_manager.hook.attach_file(source=source, name=name, attachment_type=attachment_type, extension=extension)
 
 
@@ -217,7 +224,7 @@ attach = Attach()
 
 
 class fixture:
-    def __init__(self, fixture_function, parent_uuid=None, name=None):
+    def __init__(self, fixture_function, parent_uuid: str | None = None, name: str | None = None) -> None:
         self._fixture_function = fixture_function
         self._parent_uuid = parent_uuid
         self._name = name if name else fixture_function.__name__
@@ -230,13 +237,13 @@ class fixture:
         with self:
             return self._fixture_function(*args, **kwargs)
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         plugin_manager.hook.start_fixture(parent_uuid=self._parent_uuid,
                                           uuid=self._uuid,
                                           name=self._name,
                                           parameters=self.parameters)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         plugin_manager.hook.stop_fixture(parent_uuid=self._parent_uuid,
                                          uuid=self._uuid,
                                          name=self._name,
@@ -246,7 +253,7 @@ class fixture:
 
 
 class test:
-    def __init__(self, _test, context):
+    def __init__(self, _test, context) -> None:
         self._test = _test
         self._uuid = uuid4()
         self.context = context
@@ -258,14 +265,14 @@ class test:
         with self:
             return self._test(*args, **kwargs)
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         plugin_manager.hook.start_test(parent_uuid=None,
                                        uuid=self._uuid,
                                        name=None,
                                        parameters=self.parameters,
                                        context=self.context)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         plugin_manager.hook.stop_test(parent_uuid=None,
                                       uuid=self._uuid,
                                       name=None,

@@ -1,6 +1,6 @@
-from enum import Enum
+from __future__ import annotations
 
-ALLURE_UNIQUE_LABELS = ['severity', 'thread', 'host']
+from enum import Enum
 
 
 class Severity(str, Enum):
@@ -11,13 +11,13 @@ class Severity(str, Enum):
     TRIVIAL = 'trivial'
 
 
-class LinkType:
+class LinkType(str, Enum):
     LINK = 'link'
     ISSUE = 'issue'
     TEST_CASE = 'tms'
 
 
-class LabelType(str):
+class LabelType(str, Enum):
     EPIC = 'epic'
     FEATURE = 'feature'
     STORY = 'story'
@@ -34,9 +34,12 @@ class LabelType(str):
     MANUAL = 'ALLURE_MANUAL'
 
 
+ALLURE_UNIQUE_LABELS = [LabelType.SEVERITY, LabelType.THREAD, LabelType.HOST]
+
+
 class AttachmentType(Enum):
 
-    def __init__(self, mime_type, extension):
+    def __init__(self, mime_type: str, extension: str) -> None:
         self.mime_type = mime_type
         self.extension = extension
 
@@ -66,7 +69,7 @@ class AttachmentType(Enum):
     PDF = ("application/pdf", "pdf")
 
 
-class ParameterMode(Enum):
+class ParameterMode(str, Enum):
     HIDDEN = 'hidden'
     MASKED = 'masked'
-    DEFAULT = None
+    DEFAULT = 'default'

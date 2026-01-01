@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from collections.abc import Sequence
 from itertools import chain, islice
 import attr
 import re
@@ -23,31 +26,35 @@ def __is(kind, t):
     return kind in [v for k, v in t.__dict__.items() if not k.startswith('__')]
 
 
-def parse_tag(tag, issue_pattern=None, link_pattern=None):
+def parse_tag(
+    tag: str,
+    issue_pattern: str | None = None,
+    link_pattern: str | None = None,
+) -> Label | Link:
     """
     >>> parse_tag("blocker")
-    Label(name='severity', value='blocker')
+    Label(name=<LabelType.SEVERITY: 'severity'>, value='blocker')
 
     >>> parse_tag("allure.issue:http://example.com/BUG-42")
-    Link(type='issue', url='http://example.com/BUG-42', name='http://example.com/BUG-42')
+    Link(type=<LinkType.ISSUE: 'issue'>, url='http://example.com/BUG-42', name='http://example.com/BUG-42')
 
     >>> parse_tag("allure.link.home:http://qameta.io")
-    Link(type='link', url='http://qameta.io', name='home')
+    Link(type=<LinkType.LINK: 'link'>, url='http://qameta.io', name='home')
 
     >>> parse_tag("allure.suite:mapping")
-    Label(name='suite', value='mapping')
+    Label(name=<LabelType.SUITE: 'suite'>, value='mapping')
 
     >>> parse_tag("allure.suite:mapping")
-    Label(name='suite', value='mapping')
+    Label(name=<LabelType.SUITE: 'suite'>, value='mapping')
 
     >>> parse_tag("allure.label.owner:me")
     Label(name='owner', value='me')
 
     >>> parse_tag("foo.label:1")
-    Label(name='tag', value='foo.label:1')
+    Label(name=<LabelType.TAG: 'tag'>, value='foo.label:1')
 
     >>> parse_tag("allure.foo:1")
-    Label(name='tag', value='allure.foo:1')
+    Label(name=<LabelType.TAG: 'tag'>, value='allure.foo:1')
     """
     sep = allure_tag_sep(tag)
     schema, value = islice(chain(tag.split(sep, 1), [None]), 2)
@@ -63,10 +70,10 @@ def parse_tag(tag, issue_pattern=None, link_pattern=None):
                 value = issue_pattern.format(value)
             if link_pattern and kind == "link" and not value.startswith("http"):
                 value = link_pattern.format(value)
-            return Link(type=kind, name=name or value, url=value)
+            return Link(type=LinkType(kind), name=name or value, url=value)
 
         if __is(kind, LabelType):
-            return Label(name=kind, value=value)
+            return Label(name=LabelType(kind), value=value)
 
         if kind == "id":
             return Label(name=LabelType.ID, value=value)
@@ -77,12 +84,12 @@ def parse_tag(tag, issue_pattern=None, link_pattern=None):
     return Label(name=LabelType.TAG, value=tag)
 
 
-def labels_set(labels):
+def labels_set(labels: Sequence[Label]) -> list[Label]:
     """
     >>> labels_set([Label(name=LabelType.SEVERITY, value=Severity.NORMAL),
     ...             Label(name=LabelType.SEVERITY, value=Severity.BLOCKER)
     ... ])
-    [Label(name='severity', value=<Severity.BLOCKER: 'blocker'>)]
+    [Label(name=<LabelType.SEVERITY: 'severity'>, value=<Severity.BLOCKER: 'blocker'>)]
 
     >>> labels_set([Label(name=LabelType.SEVERITY, value=Severity.NORMAL),
     ...             Label(name='severity', value='minor')
@@ -92,12 +99,12 @@ def labels_set(labels):
     >>> labels_set([Label(name=LabelType.EPIC, value="Epic"),
     ...             Label(name=LabelType.EPIC, value="Epic")
     ... ])
-    [Label(name='epic', value='Epic')]
+    [Label(name=<LabelType.EPIC: 'epic'>, value='Epic')]
 
     >>> labels_set([Label(name=LabelType.EPIC, value="Epic1"),
     ...             Label(name=LabelType.EPIC, value="Epic2")
     ... ])
-    [Label(name='epic', value='Epic1'), Label(name='epic', value='Epic2')]
+    [Label(name=<LabelType.EPIC: 'epic'>, value='Epic1'), Label(name=<LabelType.EPIC: 'epic'>, value='Epic2')]
     """
     class Wl:
         def __init__(self, label):

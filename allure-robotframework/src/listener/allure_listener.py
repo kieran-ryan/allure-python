@@ -163,7 +163,7 @@ class AllureListener:
                 test_result.labels.append(Label(name=LabelType.SEVERITY, value=Severity.CRITICAL))
 
             for link_type in (LinkType.ISSUE, LinkType.TEST_CASE, LinkType.LINK):
-                test_result.links.extend(allure_links(attributes, link_type))
+                test_result.links.extend(allure_links(attributes, link_type.value))
 
         self._current_tb, self._current_msg = None, None
 
